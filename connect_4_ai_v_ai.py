@@ -1,71 +1,68 @@
-# for representing the board as a matrix and doing operations on it
 import numpy as np
-# for gui
 import pygame
-# for exiting the gui
 import sys
-# for calulations, for exampel with infinity
 import math
-# for delaying execution of certain events
 from threading import Timer
-# for generating random values, for example for 1st turn
 import random
 
+#################################
+# GLOBAL VARIABLES              
+#################################
 
-# global constant variables
-# -------------------------------
-
-# row and column count
+# Board's size (X and Y)
 ROWS = 6
 COLS = 7
 
-# turns
+# Constants to determine who's turn it is
 PLAYER_TURN = 0
 AI_TURN = 1
-AI_TURN = 1
 
-# pieces represented as numbers
+# Constant to represent the player's pieces
+# Player's piece 1 == color RED
+# AI's piece 2 == color BLUE
+# These are 1 and 2 since 0 would represent an empty space
 PLAYER_PIECE = 1
 AI_PIECE = 2
 
-# colors for GUI
-BLUE = (0, 0, 255)
+# Constants for easy coloring of elements
+# RGB color codes
+BROWN = (199, 138, 58)
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-YELLOW = (255, 255, 0)
+RED = (199, 58, 58)
+BLUE = (58, 62, 199)
 
+BRIGHT_RED = (255, 168, 190)
+BRIGHT_BLUE = (168, 229, 255)
 
-# various functions used by the game
-# -------------------------------
+#################################
+# FUNCTIONS             
+#################################
 
-# using numpy, create an empty matrix of 6 rows and 7 columns
-def create_board():
+# Function to create a board based on the ROWS and COLS constants
+def gen_board():
     board = np.zeros((ROWS, COLS))
     return board
 
 
-# add a piece to a given location, i.e., set a position in the matrix as 1 or 2
-def drop_piece(board, row, col, piece):
+# Function to place a player's piece on the passed location
+def place_piece(board, row, col, piece):
     board[row][col] = piece
 
 
-# checking that the top row of the selected column is still not filled
-# i.e., that there is still space in the current column
-# note that indexing starts at 0
-def is_valid_location(board, col):
+# Function to check if the columns first/top row is empty
+def col_still_has_space(board, col):
     return board[0][col] == 0
 
 
-# checking where the piece will fall in the current column
-# i.e., finding the first zero row in the given column
-def get_next_open_row(board, col):
+# Function to get the next empty/open space in a column
+def get_next_open_space(board, col):
     for r in range(ROWS-1, -1, -1):
         if board[r][col] == 0:
             return r
 
 
 # calculating if the current state of the board for player or AI is a win
-def winning_move(board, piece):
+def is_winning_move(board, piece):
     # checking horizontal 'windows' of 4 for win
     for c in range(COLS-3):
         for r in range(ROWS):
@@ -91,19 +88,65 @@ def winning_move(board, piece):
                 return True
 
 
+# Function to highlight the 4 connected pieces for the winning player
+def highlight_winning_move(board, piece):
+    if piece == 1:
+        winning_piece = 3
+    else:
+        winning_piece = 4
+    # checking horizontal 'windows' of 4 for win
+    for c in range(COLS-3):
+        for r in range(ROWS):
+            if board[r][c] == piece and board[r][c+1] == piece and board[r][c+2] == piece and board[r][c+3] == piece:
+                board[r][c] = winning_piece
+                board[r][c+1] = winning_piece
+                board[r][c+2] = winning_piece
+                board[r][c+3] = winning_piece
+
+    # checking vertical 'windows' of 4 for win
+    for c in range(COLS):
+        for r in range(ROWS-3):
+            if board[r][c] == piece and board[r+1][c] == piece and board[r+2][c] == piece and board[r+3][c] == piece:
+                board[r][c] = winning_piece
+                board[r+1][c] = winning_piece
+                board[r+2][c] = winning_piece
+                board[r+3][c] = winning_piece
+
+    # checking positively sloped diagonals for win
+    for c in range(COLS-3):
+        for r in range(3, ROWS):
+            if board[r][c] == piece and board[r-1][c+1] == piece and board[r-2][c+2] == piece and board[r-3][c+3] == piece:
+                board[r][c] = winning_piece
+                board[r-1][c+1] = winning_piece
+                board[r-2][c+2] = winning_piece
+                board[r-3][c+3] = winning_piece
+
+    # checking negatively sloped diagonals for win
+    for c in range(3,COLS):
+        for r in range(3, ROWS):
+            if board[r][c] == piece and board[r-1][c-1] == piece and board[r-2][c-2] == piece and board[r-3][c-3] == piece:
+                board[r][c] = winning_piece
+                board[r-1][c-1] = winning_piece
+                board[r-2][c-2] = winning_piece
+                board[r-3][c-3] = winning_piece
+
+
 # visually representing the board using pygame
 # for each position in the matrix the board is either filled with an empty black circle, or a palyer/AI red/yellow circle
 def draw_board(board):
     for c in range(COLS):
         for r in range(ROWS):
-            pygame.draw.rect(screen, BLUE, (c * SQUARESIZE, r * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE ))
+            pygame.draw.rect(screen, BROWN, (c * SQUARESIZE, r * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE ))
             if board[r][c] == 0:
                 pygame.draw.circle(screen, BLACK, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
             elif board[r][c] == 1:
                 pygame.draw.circle(screen, RED, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
-            else :
-                pygame.draw.circle(screen, YELLOW, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
-
+            elif board[r][c] == 2 :
+                pygame.draw.circle(screen, BLUE, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
+            elif board[r][c] == 3:
+                pygame.draw.circle(screen, BRIGHT_RED, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
+            elif board[r][c] == 4 :
+                pygame.draw.circle(screen, BRIGHT_BLUE, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
     pygame.display.update()
 
 
@@ -177,7 +220,7 @@ def score_position(board, piece):
 # checking if the given turn or in other words node in the minimax tree is terminal
 # a terminal node is player winning, AI winning or board being filled up
 def is_terminal_node(board):
-    return winning_move(board, PLAYER_PIECE) or winning_move(board, AI_PIECE) or len(get_valid_locations(board)) == 0
+    return is_winning_move(board, PLAYER_PIECE) or is_winning_move(board, AI_PIECE) or len(get_valid_locations(board)) == 0
 
 
 # The algorithm calculating the best move to make given a depth of the search tree.
@@ -198,12 +241,15 @@ def minimax(board, depth, alpha, beta, maximizing_player):
     # we score the win very high and a draw as 0
     if depth == 0 or is_terminal:
         if is_terminal: # winning move 
-            if winning_move(board, AI_PIECE):
+            if is_winning_move(board, AI_PIECE):
                 return (None, 10000000)
-            elif winning_move(board, PLAYER_PIECE):
+            elif is_winning_move(board, PLAYER_PIECE):
                 return (None, -10000000)
             else:
                 return (None, 0)
+            #Singit ng pang change ng color ng mga winnig pieces
+            
+
         # if depth is zero, we simply score the current board
         else: # depth is zero
             return (None, score_position(board, AI_PIECE))
@@ -220,9 +266,9 @@ def minimax(board, depth, alpha, beta, maximizing_player):
         # for every valid column, we simulate dropping a piece with the help of a board copy
         # and run the minimax on it with decresed depth and switched player
         for col in valid_locations:
-            row = get_next_open_row(board, col)
+            row = get_next_open_space(board, col)
             b_copy = board.copy()
-            drop_piece(b_copy, row, col, AI_PIECE)
+            place_piece(b_copy, row, col, AI_PIECE)
             # recursive call
             new_score = minimax(b_copy, depth-1, alpha, beta, False)[1]
             # if the score for this column is better than what we already have
@@ -243,9 +289,9 @@ def minimax(board, depth, alpha, beta, maximizing_player):
         value = math.inf
         column = random.choice(valid_locations)
         for col in valid_locations:
-            row = get_next_open_row(board, col)
+            row = get_next_open_space(board, col)
             b_copy = board.copy()
-            drop_piece(b_copy, row, col, PLAYER_PIECE)
+            place_piece(b_copy, row, col, PLAYER_PIECE)
             new_score = minimax(b_copy, depth-1, alpha, beta, True)[1]
             if new_score < value:
                 value = new_score
@@ -261,7 +307,7 @@ def get_valid_locations(board):
     valid_locations = []
     
     for column in range(COLS):
-        if is_valid_location(board, column):
+        if col_still_has_space(board, column):
             valid_locations.append(column)
 
     return valid_locations
@@ -278,7 +324,7 @@ def end_game():
 # -------------------------------
 
 # initializing the board
-board = create_board()
+board = gen_board()
 
 # initially nobody has won yet
 game_over = False
@@ -303,7 +349,7 @@ size = (width, height)
 screen = pygame.display.set_mode(size)
 
 # font for win message
-my_font = pygame.font.SysFont("monospace", 75)
+my_font = pygame.font.SysFont("consolas", 30)
 
 # draw GUI
 draw_board(board)
@@ -322,13 +368,13 @@ while not game_over:
         # the column to drop in is found using minimax
         col, minimax_score = minimax(board, 5, -math.inf, math.inf, True)
 
-        if is_valid_location(board, col):
+        if col_still_has_space(board, col):
             pygame.time.wait(500)
-            row = get_next_open_row(board, col)
-            drop_piece(board, row, col, PLAYER_PIECE)
-            if winning_move(board, PLAYER_PIECE):
-                print("PLAYER 2 WINS!")
-                label = my_font.render("PLAYER 2 WINS!", 1, RED)
+            row = get_next_open_space(board, col)
+            place_piece(board, row, col, PLAYER_PIECE)
+            if is_winning_move(board, PLAYER_PIECE):
+                print("GIT GUD HUMAN! AI WINS!")
+                label = my_font.render("GIT GUD HUMAN! AI WINS!", 1, RED)
                 screen.blit(label, (40, 10))
                 not_over = False
                 t = Timer(3.0, end_game)
@@ -339,7 +385,6 @@ while not game_over:
         turn += 1
         # this will alternate between 0 and 1 withe very turn
         turn = turn % 2
-
                      
     # if its the AI's turn
     if turn == AI_TURN and not game_over and not_over:
@@ -347,13 +392,13 @@ while not game_over:
         # the column to drop in is found using minimax
         col, minimax_score = minimax(board, 5, -math.inf, math.inf, True)
 
-        if is_valid_location(board, col):
+        if col_still_has_space(board, col):
             pygame.time.wait(500)
-            row = get_next_open_row(board, col)
-            drop_piece(board, row, col, AI_PIECE)
-            if winning_move(board, AI_PIECE):
-                print("PLAYER 2 WINS!")
-                label = my_font.render("PLAYER 2 WINS!", 1, YELLOW)
+            row = get_next_open_space(board, col)
+            place_piece(board, row, col, AI_PIECE)
+            if is_winning_move(board, AI_PIECE):
+                print("GIT GUD HUMAN! AI WINS!")
+                label = my_font.render("GIT GUD HUMAN! AI WINS!", 1, BLUE)
                 screen.blit(label, (40, 10))
                 not_over = False
                 t = Timer(3.0, end_game)

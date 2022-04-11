@@ -40,14 +40,6 @@ def draw_board(board):
                 pygame.draw.circle(screen, BRIGHT_BLUE, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
     pygame.display.update()
 
-# Initializing the board
-board = brd.gen_board(ROWS, COLS)
-
-# Variable for looping through the game loop until someone wins
-game_over = False
-
-# Variable flag for the game loop used for the pygame GUI
-not_over = True
 
 # Function to end the game loop
 def end_game(massage, text_color):
@@ -66,7 +58,21 @@ def close_window():
     game_over = True
     print(game_over)
 
-# initialy it is player 1's turn
+
+#################################
+# VARIABLES FOR THE GAME LOOP  
+#################################
+
+# Initializing the board
+board = brd.gen_board(ROWS, COLS)
+
+# Variable for looping through the game loop until someone wins
+game_over = False
+
+# Variable flag for the game loop used for the pygame GUI
+not_over = True
+
+# Randomly select who will go first
 turn = random.randint(0, 1)
 
 pygame.init()
@@ -86,12 +92,10 @@ pygame.display.update()
 default_font = pygame.font.SysFont("consolas", 30)
 
 
+#################################
+# MAIN GAME LOOP
+#################################
 
-# game loop
-# -------------------------------
-
-# loop that runs while the game_over variable is false,
-# ie someone hasn't placed 4 in a row yet
 while not game_over:
 
     for event in pygame.event.get():
@@ -111,11 +115,11 @@ while not game_over:
 
         if event.type == pygame.MOUSEBUTTONDOWN and not_over:
             pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE))
-            # ask for player 1 inupt
+            # Player 1 Input
             if turn == 0:
-                # we assume players will use correct input
+                
                 xpos = event.pos[0] 
-                col = int(math.floor(xpos/SQUARESIZE)) #int(input("Player 1 make your selection by typing (0-6):"))
+                col = int(math.floor(xpos/SQUARESIZE))
 
                 if brd.col_still_has_space(board, col).any():
                     row = brd.get_next_open_space(board, col, ROWS)
@@ -127,10 +131,10 @@ while not game_over:
                 else:
                     end_game("DRAW", BROWN)
 
-            # ask for player 2 input
+            # Player 2 Input
             else:
                 xpos = event.pos[0] 
-                col = int(math.floor(xpos/SQUARESIZE)) #int(input("Player 2 make your selection by typing (0-6):"))
+                col = int(math.floor(xpos/SQUARESIZE))
 
                 if brd.col_still_has_space(board, col).any():
                     row = brd.get_next_open_space(board, col, ROWS)
@@ -144,7 +148,7 @@ while not game_over:
 
             draw_board(board)
 
-            # increment turn by 1
             turn += 1
-            # this will alternate between 0 and 1 withe very turn
+            # Alternate between 0 and 1
+            # value of 0 == PLAYER1 while value of 1 == PLAYER2
             turn = turn % 2

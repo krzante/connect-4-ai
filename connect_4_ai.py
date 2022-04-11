@@ -88,49 +88,6 @@ def is_winning_move(board, piece):
                 return True
 
 
-# Function to highlight the 4 connected pieces for the winning player
-def highlight_winning_move(board, piece):
-    if piece == 1:
-        winning_piece = 3
-    else:
-        winning_piece = 4
-    # checking horizontal 'windows' of 4 for win
-    for c in range(COLS-3):
-        for r in range(ROWS):
-            if board[r][c] == piece and board[r][c+1] == piece and board[r][c+2] == piece and board[r][c+3] == piece:
-                board[r][c] = winning_piece
-                board[r][c+1] = winning_piece
-                board[r][c+2] = winning_piece
-                board[r][c+3] = winning_piece
-
-    # checking vertical 'windows' of 4 for win
-    for c in range(COLS):
-        for r in range(ROWS-3):
-            if board[r][c] == piece and board[r+1][c] == piece and board[r+2][c] == piece and board[r+3][c] == piece:
-                board[r][c] = winning_piece
-                board[r+1][c] = winning_piece
-                board[r+2][c] = winning_piece
-                board[r+3][c] = winning_piece
-
-    # checking positively sloped diagonals for win
-    for c in range(COLS-3):
-        for r in range(3, ROWS):
-            if board[r][c] == piece and board[r-1][c+1] == piece and board[r-2][c+2] == piece and board[r-3][c+3] == piece:
-                board[r][c] = winning_piece
-                board[r-1][c+1] = winning_piece
-                board[r-2][c+2] = winning_piece
-                board[r-3][c+3] = winning_piece
-
-    # checking negatively sloped diagonals for win
-    for c in range(3,COLS):
-        for r in range(3, ROWS):
-            if board[r][c] == piece and board[r-1][c-1] == piece and board[r-2][c-2] == piece and board[r-3][c-3] == piece:
-                board[r][c] = winning_piece
-                board[r-1][c-1] = winning_piece
-                board[r-2][c-2] = winning_piece
-                board[r-3][c-3] = winning_piece
-
-
 # visually representing the board using pygame
 # for each position in the matrix the board is either filled with an empty black circle, or a palyer/AI red/yellow circle
 def draw_board(board):
@@ -143,10 +100,6 @@ def draw_board(board):
                 pygame.draw.circle(screen, RED, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
             elif board[r][c] == 2 :
                 pygame.draw.circle(screen, BLUE, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
-            elif board[r][c] == 3:
-                pygame.draw.circle(screen, BRIGHT_RED, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
-            elif board[r][c] == 4 :
-                pygame.draw.circle(screen, BRIGHT_BLUE, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
     pygame.display.update()
 
 
@@ -388,18 +341,23 @@ while not game_over:
                 xpos = event.pos[0] 
                 col = int(math.floor(xpos/SQUARESIZE)) 
 
-                if col_still_has_space(board, col):
+                if col_still_has_space(board, col).any():
                     row = get_next_open_space(board, col)
                     place_piece(board, row, col, PLAYER_PIECE)
                     if is_winning_move(board, PLAYER_PIECE):
-                        highlight_winning_move(board, PLAYER_PIECE)
                         print("THERE IS HOPE FOR HUMANITY")
                         label = my_font.render("THERE IS HOPE FOR HUMANITY", 1, RED)
                         screen.blit(label, (40, 10))
                         not_over = False
                         t = Timer(3.0, end_game)
                         t.start()
-                
+                else:
+                    print("DRAW! NICE!")
+                    label = my_font.render("DRAW! NICE!", 1, BROWN)
+                    screen.blit(label, (40, 10))
+                    not_over = False
+                    t = Timer(3.0, end_game)
+                    t.start()
                 draw_board(board) 
 
                 # increment turn by 1
@@ -417,18 +375,24 @@ while not game_over:
         # the column to drop in is found using minimax
         col, minimax_score = minimax(board, 5, -math.inf, math.inf, True)
 
-        if col_still_has_space(board, col):
+        if col_still_has_space(board, col).any():
             pygame.time.wait(500)
             row = get_next_open_space(board, col)
             place_piece(board, row, col, AI_PIECE)
             if is_winning_move(board, AI_PIECE):
-                highlight_winning_move(board, AI_PIECE)
                 print("GIT GUD HUMAN! AI WINS!")
                 label = my_font.render("GIT GUD HUMAN! AI WINS!", 1, BLUE)
                 screen.blit(label, (40, 10))
                 not_over = False
                 t = Timer(3.0, end_game)
                 t.start()
+        else:
+            print("DRAW!")
+            label = my_font.render("DRAW!", 1, BROWN)
+            screen.blit(label, (40, 10))
+            not_over = False
+            t = Timer(3.0, end_game)
+            t.start()
         draw_board(board)    
 
         # increment turn by 1

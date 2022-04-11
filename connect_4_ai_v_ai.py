@@ -31,9 +31,6 @@ BLACK = (0, 0, 0)
 RED = (199, 58, 58)
 BLUE = (58, 62, 199)
 
-BRIGHT_RED = (255, 168, 190)
-BRIGHT_BLUE = (168, 229, 255)
-
 #################################
 # FUNCTIONS             
 #################################
@@ -143,10 +140,6 @@ def draw_board(board):
                 pygame.draw.circle(screen, RED, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
             elif board[r][c] == 2 :
                 pygame.draw.circle(screen, BLUE, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
-            elif board[r][c] == 3:
-                pygame.draw.circle(screen, BRIGHT_RED, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
-            elif board[r][c] == 4 :
-                pygame.draw.circle(screen, BRIGHT_BLUE, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
     pygame.display.update()
 
 
@@ -379,6 +372,13 @@ while not game_over:
                 not_over = False
                 t = Timer(3.0, end_game)
                 t.start()
+        else:
+            print("DRAW! NICE!")
+            label = my_font.render("DRAW! NICE!", 1, BROWN)
+            screen.blit(label, (40, 10))
+            not_over = False
+            t = Timer(3.0, end_game)
+            t.start()
         draw_board(board)    
 
         # increment turn by 1
@@ -392,7 +392,7 @@ while not game_over:
         # the column to drop in is found using minimax
         col, minimax_score = minimax(board, 5, -math.inf, math.inf, True)
 
-        if col_still_has_space(board, col):
+        if col_still_has_space(board, col).any():
             pygame.time.wait(500)
             row = get_next_open_space(board, col)
             place_piece(board, row, col, AI_PIECE)
@@ -403,6 +403,13 @@ while not game_over:
                 not_over = False
                 t = Timer(3.0, end_game)
                 t.start()
+        else:
+            print("DRAW! NICE!")
+            label = my_font.render("DRAW! NICE!", 1, BROWN)
+            screen.blit(label, (40, 10))
+            not_over = False
+            t = Timer(3.0, end_game)
+            t.start()
         draw_board(board)    
 
         # increment turn by 1

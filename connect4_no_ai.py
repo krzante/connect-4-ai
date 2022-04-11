@@ -10,10 +10,10 @@ from threading import Timer
 ROWS = 6
 COLS = 7
 
-BLUE = (0, 0, 255)
+BROWN = (199, 138, 58)
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-YELLOW = (255, 255, 0)
+RED = (199, 58, 58)
+BLUE = (58, 62, 199)
 
 # various functions used by the game
 # -------------------------------
@@ -74,13 +74,13 @@ def winning_move(board, piece):
 def draw_board(board):
     for c in range(COLS):
         for r in range(ROWS):
-            pygame.draw.rect(screen, BLUE, (c * SQUARESIZE, r * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE ))
+            pygame.draw.rect(screen, BROWN, (c * SQUARESIZE, r * SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE ))
             if board[r][c] == 0:
                 pygame.draw.circle(screen, BLACK, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
             elif board[r][c] == 1:
                 pygame.draw.circle(screen, RED, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
             else :
-                pygame.draw.circle(screen, YELLOW, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
+                pygame.draw.circle(screen, BLUE, (int(c * SQUARESIZE + SQUARESIZE/2), int(r* SQUARESIZE + SQUARESIZE + SQUARESIZE/2)), circle_radius)
 
     pygame.display.update()
 
@@ -140,7 +140,7 @@ while not game_over:
             if turn == 0:
                 pygame.draw.circle(screen, RED, (xpos, int(SQUARESIZE/2)), circle_radius )
             else: 
-                pygame.draw.circle(screen, YELLOW, (xpos, int(SQUARESIZE/2)), circle_radius )
+                pygame.draw.circle(screen, BLUE, (xpos, int(SQUARESIZE/2)), circle_radius )
 
         pygame.display.update()
 
@@ -152,7 +152,7 @@ while not game_over:
                 xpos = event.pos[0] 
                 col = int(math.floor(xpos/SQUARESIZE)) #int(input("Player 1 make your selection by typing (0-6):"))
 
-                if is_valid_location(board, col):
+                if is_valid_location(board, col).any():
                     row = get_next_open_row(board, col)
                     drop_piece(board, row, col, 1)
 
@@ -163,24 +163,36 @@ while not game_over:
                         not_over = False
                         t = Timer(3.0, end_game)
                         t.start()
-
+                else:
+                    print("DRAW! NICE!")
+                    label = my_font.render("DRAW! NICE!", 1, BROWN)
+                    screen.blit(label, (40, 10))
+                    not_over = False
+                    t = Timer(3.0, end_game)
+                    t.start()
             # ask for player 2 input
             else:
                 xpos = event.pos[0] 
                 col = int(math.floor(xpos/SQUARESIZE)) #int(input("Player 2 make your selection by typing (0-6):"))
 
-                if is_valid_location(board, col):
+                if is_valid_location(board, col).any():
                     row = get_next_open_row(board, col)
                     drop_piece(board, row, col, 2)
 
                     if winning_move(board, 2):
                         print("PLAYER 2 WINS!")
-                        label = my_font.render("PLAYER 1 WINS!", 1, YELLOW)
+                        label = my_font.render("PLAYER 1 WINS!", 1, BLUE)
                         screen.blit(label, (40, 10))
                         not_over = False
                         t = Timer(3.0, end_game)
                         t.start()
-
+                else:
+                    print("DRAW! NICE!")
+                    label = my_font.render("DRAW! NICE!", 1, BROWN)
+                    screen.blit(label, (40, 10))
+                    not_over = False
+                    t = Timer(3.0, end_game)
+                    t.start()
             draw_board(board)
 
             # increment turn by 1

@@ -15,6 +15,9 @@ from functions import Board as brd, MiniMax as mm
 ROWS = 6
 COLS = 7
 
+AI1STRENGTH = 5
+AI2STRENGTH = 5
+
 # Constants to determine who's turn it is
 PLAYER_TURN = 0
 AI_TURN = 1
@@ -126,7 +129,7 @@ while not game_over:
 
         # the column to drop in is found using minimax
         # minimax_score catches the value of the move.
-        col, minimax_score = mm.minimax(board, 5, -math.inf, math.inf, True, ROWS, COLS, PLAYER_PIECE, AI_PIECE)
+        col, minimax_score = mm.minimax(board, AI1STRENGTH, -math.inf, math.inf, True, ROWS, COLS, PLAYER_PIECE, AI_PIECE)
         
         if brd.col_still_has_space(board, col).any():
             pygame.time.wait(250)
@@ -150,7 +153,7 @@ while not game_over:
 
         # the column to drop in is found using minimax
         # minimax_score catches the value of the move.
-        col, minimax_score = mm.minimax(board, 5, -math.inf, math.inf, True, ROWS, COLS, PLAYER_PIECE, AI_PIECE)
+        col, minimax_score = mm.minimax(board, AI2STRENGTH, -math.inf, math.inf, True, ROWS, COLS, PLAYER_PIECE, AI_PIECE)
         
         if brd.col_still_has_space(board, col).any():
             pygame.time.wait(250)
